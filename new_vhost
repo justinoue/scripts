@@ -1,0 +1,47 @@
+#!/bin/bash
+site=$1
+
+echo "building vhost for ${site}"
+mkdir -p /home/justin/projects/${site}/log /home/justin/projects/${site}/app
+ln -s /home/justin/projects/${site}/ /srv/vhosts/${site}
+
+touch /srv/vhosts/${site}/log/error.log
+touch /srv/vhosts/${site}/log/access.log
+
+touch /srv/vhosts/${site}/app/index.php
+cat > /srv/vhosts/${site}/app/index.php << EOF
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>${site}</title>
+  </head>
+  <body>
+    <h1>Hello ${site}!</h1>
+    <h2><?php echo 'Hello PHP!'; ?></h2>
+  </body>
+</html>
+EOF
+
+chown -R justin:justin /home/justin/projects/${site}
+
+touch /etc/apache2/sites-available/${site}.conf
+cat > /etc/apache2/sites-available/${site}.conf << EOF
+<VirtualHost *:80>
+	ServerName ${site}.local
+	ServerAdmin ouellette.justin@gmail.com
+	DocumentRoot /srv/vhosts/${site}/app
+	ErrorLog /srv/vhosts/${site}/log/error.log
+	CustomLog /srv/vhosts/${site}/log/access.log combined
+</VirtualHost>
+<Directory "/srv/vhosts/${site}/app">
+   Order allow,deny
+   Allow from all
+   Require all granted
+</Directory>
+EOF
+
+a2ensite ${site}
+service apache2 restart
+
+echo "127.0.0.1 ${site}.local" >> /etc/hosts
+printf "done!\n\n"
