@@ -34,9 +34,10 @@ cat > /etc/apache2/sites-available/${site}.conf << EOF
 	CustomLog /srv/vhosts/${site}/log/access.log combined
 </VirtualHost>
 <Directory "/srv/vhosts/${site}/app">
-   Order allow,deny
-   Allow from all
-   Require all granted
+	Order allow,deny
+	Allow from all
+	Require all granted
+	AllowOverride all
 </Directory>
 EOF
 
